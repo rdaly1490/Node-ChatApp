@@ -1,18 +1,23 @@
 var express = require('express');
-// var path = require('path');
 var mongoose = require('mongoose');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var ConnectMogo = require('connect-mongo')(session);
 var FacebookStrategy = require('passport-facebook');
 var passport = require('passport');
+var http = require('http');
+var io = require('socket.io');
 
 var appRoutes = require('./routes/routes');
 var passportAuth = require('./auth/passportAuth');
+var socketConfig = require('./socket/socket');
 var config = require('./config/config');
 
 var app = express();
 mongoose.connect(config.dbURL);
+
+// list of rooms users create
+var rooms = [];
 
 app.engine('html', require('hogan-express'));
 app.set('views', __dirname + '/views');
@@ -46,6 +51,17 @@ appRoutes(express, app, passport);
 
 var port = process.env.PORT || 3000;
 
-app.listen(port, function() {
-	console.log('server running....');
-});
+var server = http.createServer(app);
+
+io.listen(server);
+socketConfig(io, rooms);
+
+server.listen(port, function() {
+	console.log('server running on port ' + port + ' in ' + env + ' mode');
+})
+
+// app.listen(port, function() {
+// 	console.log('server running....');
+// });
+
+
