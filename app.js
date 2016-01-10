@@ -4,8 +4,11 @@ var mongoose = require('mongoose');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var ConnectMogo = require('connect-mongo')(session);
+var FacebookStrategy = require('passport-facebook');
+var passport = require('passport');
 
 var appRoutes = require('./routes/routes');
+var passportAuth = require('./auth/passportAuth');
 var config = require('./config/config');
 
 var app = express();
@@ -35,7 +38,11 @@ if (env === 'development') {
 	}));
 }
 
-appRoutes(express, app);
+app.use(passport.initialize());
+app.use(passport.session());
+
+passportAuth(passport, FacebookStrategy, config, mongoose);
+appRoutes(express, app, passport);
 
 var port = process.env.PORT || 3000;
 
