@@ -4,23 +4,51 @@
 	<meta charset="UTF-8">
 	<title>ChatCAT</title>
 	<link rel="stylesheet" href="../css/room.css">
+</head>
+<body>
+<div class="rm-container">
+		<h1 class="rm-title">ChatCAT</h1>
+		<div class="rm-userbox">
+			<img src="{{user.profilePic}}" class="userPic">
+			<h3 class="userName">{{user.fullname}} | <a href="/logout">Logout</a><a href="/chatrooms">More Chatrooms</a></h3>
+		</div>
+		<div class="rm-roomname">
+			<h5>{{room_name}}</h5>
+		</div>
+		<div class="rm-messages">
+			<ul class="messages">
+			</ul>
+		</div>
+		<div class="rm-users">
+			<ul class="users">
+			</ul>
+		</div>
+		<div class="rm-newmessage">
+			<input type="text" class="newmessage" autocomplete="off" placeholder="Type in your message and press enter !">
+			
+		</div>
+	</div>
 	<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
 	$(function(){
 		var host = '{{config.host}}';
+		// messages represents the websocket connection to this namespace
 		var messages = io.connect(host + '/messages');
 		var roomNum = {{room_number}};
 		var userName = '{{user.fullname}}';
 		var userPic = '{{user.profilePic}}';
 
+		// as soon as this page creates a websocket connection...
 		messages.on('connect', function(){
 			console.log('Connection Established !!');
+			// emit joinroom event with this obj as the payload
+			// can partition rooms to be seperate via room numbers
 			messages.emit('joinroom', {room:roomNum, user:userName, userPic:userPic})
 		})
 
-		$(document).on('keyup', '.newmessage', function(e){
-			if(e.which === 13 && $(this).val()!=''){
+		$('.newmessage').on('keyup', function(e){
+			if(e.which === 13 && $(this).val()!==''){
 				messages.emit('newMessage', {
 					room_number:roomNum,
 					user:userName,
@@ -35,7 +63,7 @@
 		messages.on('messagefeed', function(data){
 			var msgs = JSON.parse(data);
 			updateMessageFeed(msgs.userPic, msgs.message);
-		})
+		});
 
 		function updateMessageFeed(userPic, message){
 			var str = '<li>';
@@ -44,6 +72,7 @@
 				str +=	'<div class="msg"><p>' + message + '</p></div>';
 				str +=	'</div>';
 				str += '</li>';
+				// animates the message entering the feed
 			$(str).hide().prependTo($('.messages')).slideDown(100);
 		}
 
@@ -54,43 +83,13 @@
 				var str = '<li><img src="' + userlist[n].userPic + '"><h5>' + userlist[n].user + '</h5></li>';
 				$(str).prependTo($('.users'));
 			}
-		})
+		});
 
+		// checks if users left room every 15 seconds and updates list due to function in socket.js
 		setInterval(function(){
 			messages.emit('updateList', {room:roomNum});
 		}, 15 * 1000);
-	})
+	});
 	</script>
-</head>
-<body>
-<div class="rm-container">
-		<h1 class="rm-title">ChatCAT</h1>
-		<div class="rm-userbox">
-			<img src="{{user.profilePic}}" class="userPic">
-			<h3 class="userName">{{user.fullname}} | <a href="/logout">Logout</a><a href="/chatrooms">More Chatrooms</a></h3>
-		</div>
-		<div class="rm-roomname">
-			<h5>{{room_name}}</h5>
-		</div>
-		<div class="rm-messages">
-			<ul class="messages">
-				<!-- <li>
-					<div class="msgbox">
-						<div class="pic"><img src="../public/images/profilepic.jpg">Sachin Bhatnagar</div>
-						<div class="msg"><p>Hi there this looks nice !</p></div>
-					</div>
-				</li>  -->
-			</ul>
-		</div>
-		<div class="rm-users">
-			<ul class="users">
-				
-			</ul>
-		</div>
-		<div class="rm-newmessage">
-			<input type="text" class="newmessage" autocomplete="off" placeholder="Type in your message and press enter !">
-			
-		</div>
-	</div>
 </body>
 </html>

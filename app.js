@@ -25,6 +25,7 @@ app.set('view engine', 'html');
 
 // // Where to look for static files (css, images, etc.)
 app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/public/scripts'));
 
 app.use(cookieParser());
 
@@ -47,14 +48,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passportAuth(passport, FacebookStrategy, config, mongoose);
-appRoutes(express, app, passport);
+appRoutes(express, app, passport, config, rooms);
 
 var port = process.env.PORT || 3000;
 
 var server = http.createServer(app);
 
-io.listen(server);
-socketConfig(io, rooms);
+socketConfig(io.listen(server), rooms);
 
 server.listen(port, function() {
 	console.log('server running on port ' + port + ' in ' + env + ' mode');
