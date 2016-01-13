@@ -1,6 +1,6 @@
 module.exports = function(io, rooms) {
 	var chatrooms = io.of('/roomlist').on('connection', function(socket) {
-		console.log('connection establised on the server');
+		console.log('ChatRoom List Connection Established');
 		// when connection established receive array
 		socket.emit('roomupdate', JSON.stringify(rooms));
 
@@ -15,7 +15,7 @@ module.exports = function(io, rooms) {
 
 	// looking for connection event and if does run callback
 	var messages = io.of('/messages').on('connection', function(socket) {
-		console.log('Connected to the chatroom');
+		console.log('Connected to Chatroom');
 
 		socket.on('joinroom', function(data) {
 			socket.username = data.user;
@@ -37,7 +37,7 @@ module.exports = function(io, rooms) {
 			var getUsers = io.of('/messages').clients(room);
 			var userList = [];
 			for (var i in getUsers) {
-				userList.push({user: getUsers[i].username});
+				userList.push({user: getUsers[i].username, userPic: getUsers[i].userPic});
 			}
 			socket.to(room).emit('updateUserList', JSON.stringify(userList));
 

@@ -7,10 +7,10 @@
 </head>
 <body>
 <div class="rm-container">
-		<h1 class="rm-title">ChatCAT</h1>
+		<h1 class="rm-title">ChatRoom</h1>
 		<div class="rm-userbox">
 			<img src="{{user.profilePic}}" class="userPic">
-			<h3 class="userName">{{user.fullname}} | <a href="/logout">Logout</a><a href="/chatrooms">More Chatrooms</a></h3>
+			<h3 class="userName">{{user.fullName}} | <a href="/logout">Logout</a><a href="/chatrooms">More Chatrooms</a></h3>
 		</div>
 		<div class="rm-roomname">
 			<h5>{{room_name}}</h5>
@@ -36,12 +36,11 @@
 		// messages represents the websocket connection to this namespace
 		var messages = io.connect(host + '/messages');
 		var roomNum = {{room_number}};
-		var userName = '{{user.fullname}}';
+		var userName = '{{user.fullName}}';
 		var userPic = '{{user.profilePic}}';
-
 		// as soon as this page creates a websocket connection...
 		messages.on('connect', function(){
-			console.log('Connection Established !!');
+			console.log('Connected to ChatRoom');
 			// emit joinroom event with this obj as the payload
 			// can partition rooms to be seperate via room numbers
 			messages.emit('joinroom', {room:roomNum, user:userName, userPic:userPic})
@@ -54,7 +53,7 @@
 					user:userName,
 					userPic:userPic,
 					message:$(this).val()
-				})
+				});
 				updateMessageFeed(userPic, $(this).val());
 				$(this).val('');
 			}
@@ -76,7 +75,7 @@
 			$(str).hide().prependTo($('.messages')).slideDown(100);
 		}
 
-		messages.on('updateUsersList', function(data){
+		messages.on('updateUserList', function(data){
 			var userlist = JSON.parse(data);
 			$('.users').html('');
 			for(var n = 0; n < userlist.length; n++){
